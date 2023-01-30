@@ -39,7 +39,7 @@ for filename in os.listdir(dirname):
     df['Date'] = date
     df['datetime'] = df.apply(lambda row: row.Date + ' ' + row.Time, axis=1)
     #df['datetime'] = pd.to_datetime(df.datetime)
-    df['timestamp'] = df.apply(lambda row: int(pd.to_datetime(row['datetime']).timestamp()), axis=1) #pd.to_datetime(df.Timestamp)
+    df['timestamp'] = df.apply(lambda row: int(pd.to_datetime(row['datetime'], format = '%d.%m.%Y %H:%M:%S').timestamp()), axis=1) #pd.to_datetime(df.Timestamp)
     
     ##  add file data to data frame
     df = df[params]
