@@ -12,11 +12,12 @@ def get_folder_separator():
     else:
         sep = '\\' ## -- path separator for Windows
     return sep
-	
-	
+
+
 ############################################################################
 ## =========================================================================
-print("Это программа для сбора данных прибора DAC из формата прибора в один файл.")
+line = '-' * 75
+print(line,"Программа для сбора данных из файлов формата прибора DAC в один файл.", line, sep="\n")
 
 ## каталог для входных данных
 dirname = "data"
@@ -27,20 +28,34 @@ if not dirname.endswith(sep):
 dirname = '.' + sep + dirname
 
 if not os.path.isdir(dirname):
-    print(f"\n\n Error Alarm!! Папка с данными не обнаружена: {dirname}!")
+    print(f"\n\n Error Alarm!! Папка с данными не обнаружена!")
     print(f"Создайте папку {dirname}, положите туда файлы с данными. После этого снова запустите эту программу.\n")
+    ##  wait 
+    x = input("\n\nPress ENTER to finish...\n")
     exit()
     
 
 first = True
 for filename in os.listdir(dirname):
+    ##  полный путь к файлу
     file = dirname + filename
-    date = filename.split('_')[1]
-    date = '.'.join([date[-2:], date[4:6], date[:4]])
+    
+    ##  работаем только с файлами
+    if not os.path.isfile(file):
+        print(f"\n {file} не является файлом.", end='\t')
+        continue
+    
+    try:
+        date = filename.split('_')[1]
+        date = '.'.join([date[-2:], date[4:6], date[:4]])
+    except:
+        #print(f"\n {filename} name does not look as a DAC datafilename. Skipped.")
+        print(f"\n {filename} не похоже на имя файла с данными DAC. Файл пропущен.", end="\t")
+        continue
     
     ##  read datafile
     df = pd.read_csv(file)
-    print("\n", date, file, os.path.getmtime(file), '\t', df.shape, end='\t') ## время доступа к файла
+    print("\n", date, file, os.path.getmtime(file), '\t', df.shape, end='\t') ## время доступа к файлу
     if df.shape[0] == 0:
         continue
         
@@ -60,8 +75,12 @@ for filename in os.listdir(dirname):
         data = pd.concat([data, df], ignore_index=True)
     print('data: ', data.shape, end='')
 
-    
-##  отсортировать по времени timestamp
-data.sort_values(by=['timestamp']).drop_duplicates(subset=['timestamp']).set_index('timestamp').to_csv("DAS_collected.csv")
+##  sort and save
+try:    
+    ##  отсортировать по времени timestamp
+    data.sort_values(by=['timestamp']).drop_duplicates(subset=['timestamp']).set_index('timestamp').to_csv("DAS_collected.csv")
+except:
+    print(f"\n\nERROR: Данных не обнаружено. Проверьте папку {dirname}, положите туда файлы с данными. После этого снова запустите эту программу.\n")
 
+##  wait 
 x = input("\n\nPress ENTER to finish...\n")
